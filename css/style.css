@@ -1,0 +1,10 @@
+.page-wrap {
+  margin: 0 auto;
+  min-height: 100%;
+  margin-bottom: 1em;
+}
+
+.site-footer {
+  height: 1em;
+  text-align: center;
+}
