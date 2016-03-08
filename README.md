@@ -5,4 +5,4 @@ With this twist on regular chess, Fair Chess implements the [fairest sharing seq
 
 Check out the projects we used!
 * [chessboard.js](https://github.com/oakmac/chessboardjs/)
-* [jQuery](jquery.com)
+* [jQuery](https://jquery.com)
