@@ -1,7 +1,8 @@
 var board,
     game = new Chess(),
     messageField = $('#message'),
-    turn = 'w';
+    turn = 'w',
+	turn_count = 0;
 
 // Only move if it is their turn and game is not over.
 // Modified chessboardjs.com/examples#5000
