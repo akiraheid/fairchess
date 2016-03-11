@@ -71,7 +71,7 @@ var init = function() {
     position: 'start'
   };
 
-  var board = ChessBoard('board', boardConfig);
+  board = ChessBoard('board', boardConfig);
   updateStatus();
 };
 
