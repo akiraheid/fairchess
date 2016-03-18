@@ -23,22 +23,17 @@ messageFields[12] = $('#message12');
 // Only move if it is their turn and game is not over.
 // Modified chessboardjs.com/examples#5000
 var onDragStart = function(source, piece, position, orientation) {
-	/*
 	if (game.game_over() === true ||
 			(turns[0] === 'w' && piece.search(/^b/) !== -1) ||
 			(turns[0] === 'b' && piece.search(/^w/) !== -1)) {
 		return false;
 	}
-	*/
 };
 
 // Move if legal
 // Modified chessboardjs.com/examples#5000
 var onDrop = function(source, target) {
-	console.log("Turn: " + game.turn + " From: " + source + " To: " + target);
-	console.log(game.moves({square: source}));
 	var move = game.move({
-		color: game.turn,
 		from: source,
 		to: target,
 		promotion: 'q' // TODO Make promotion option
@@ -55,17 +50,17 @@ var onDrop = function(source, target) {
 	}
 
 	var fen = game.fen();
-	var newFen = '';
-	console.log(fen);
+	var newFenArr = fen.split(' ');
 	// Increment the turn number if the current player is black and the next turn
 	// is white.
-	if (fen.search(' w ') != -1) {
-		var newFenArr = fen.split(' ');
-		newFenArr[5] = (Number(newFenArr[5])++).toString();
-		newFen = newFenArr.join();
+	if (fen.search(' w ') != -1 && turns[i] == 'b') {
+		var tmp = Number(newFenArr[5]) + 1;
+		newFenArr[5] = tmp.toString();
 	}
-	console.log(newFen);
 
+	// Change the turn based on turns[]
+	newFenArr[1] = turns[0];
+	game.load(newFenArr.join(' '));
 	updateStatus();
 };
 
@@ -81,15 +76,7 @@ var bitSum = function(i) {
 // Update the board after piece is done snapping
 // chessboardjs.com/examples#5000
 var onSnapEnd = function() {
-	var state = game.fen();
-	if (state.indexOf('w') > -1 && turns[0] === 'b') {
-		state.replace('w', 'b');
-	}
-	else if (state.indexOf('b') > -1 && turns[0] === 'w'){
-		state.replace('b', 'w');
-	}
-	game.load(state);
-	board.position(state);
+	board.position(game.fen());
 };
 
 // Update the turn
@@ -121,7 +108,7 @@ var updateStatus = function() {
 		}
 
 		if (game.in_check() === true) {
-			message += ', ' + moveColors[0] + ' is in check';
+			message = moveColors[0] + ' is in check';
 		}
 	}
 
@@ -130,8 +117,6 @@ var updateStatus = function() {
 	for (i = 0; i <= 12; i++) {
 		messageFields[i].html(messages[i]);
 	}
-	game.turn = (turns[0] === 'w' ? game.WHITE : game.BLACK);
-	console.log(turns[0] + " turn");
 };
 
 var init = function() {
