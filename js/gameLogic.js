@@ -4,125 +4,148 @@ var messageFieldNumb = $('#messageNumb');
 var messageField = $('#message');
 var messageFields = [];
 var turns = ['w','b','b','w','b','w','w','b','b','w','w','b','w'];
-var turn_count = 0;
+var turnCount = 0;
 
-	messageFields[0] = $('#message0');
-    messageFields[1] = $('#message1');
-    messageFields[2] = $('#message2');
-    messageFields[3] = $('#message3');
-    messageFields[4] = $('#message4');
-    messageFields[5] = $('#message5');
-    messageFields[6] = $('#message6');
-    messageFields[7] = $('#message7');
-    messageFields[8] = $('#message8');
-    messageFields[9] = $('#message9');
-    messageFields[10] = $('#message10');
-    messageFields[11] = $('#message11');
-    messageFields[12] = $('#message12');
+messageFields[0] = $('#message0');
+messageFields[1] = $('#message1');
+messageFields[2] = $('#message2');
+messageFields[3] = $('#message3');
+messageFields[4] = $('#message4');
+messageFields[5] = $('#message5');
+messageFields[6] = $('#message6');
+messageFields[7] = $('#message7');
+messageFields[8] = $('#message8');
+messageFields[9] = $('#message9');
+messageFields[10] = $('#message10');
+messageFields[11] = $('#message11');
+messageFields[12] = $('#message12');
 
 // Only move if it is their turn and game is not over.
 // Modified chessboardjs.com/examples#5000
 var onDragStart = function(source, piece, position, orientation) {
-    if (game.game_over() === true ||
-        (turns[0] === 'w' && piece.search(/^b/) !== -1) ||
-        (turns[0] === 'b' && piece.search(/^w/) !== -1)) {
-        return false;
-    }
+	/*
+	if (game.game_over() === true ||
+			(turns[0] === 'w' && piece.search(/^b/) !== -1) ||
+			(turns[0] === 'b' && piece.search(/^w/) !== -1)) {
+		return false;
+	}
+	*/
 };
 
 // Move if legal
 // Modified chessboardjs.com/examples#5000
 var onDrop = function(source, target) {
-    var move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q' // TODO Make promotion option
-    });
+	console.log("Turn: " + game.turn + " From: " + source + " To: " + target);
+	console.log(game.moves({square: source}));
+	var move = game.move({
+		color: game.turn,
+		from: source,
+		to: target,
+		promotion: 'q' // TODO Make promotion option
+	});
 
-    if (move === null) {
-        return 'snapback';
-    }
+	if (move === null) {
+		return 'snapback';
+	}
 
-    // Valid move
-    turn_count = turn_count + 1;
-    for (i = 0; i <= 12; i++) {
-        turns[i] = (bitSum(turn_count + i) === 0 ? 'w' : 'b');
-    }
-    updateStatus();
-	return 0;
+	// Valid move
+	turnCount = turnCount + 1;
+	for (i = 0; i < 12; i++) {
+		turns[i] = (bitSum(turnCount + i) === 0 ? 'w' : 'b');
+	}
+
+	var fen = game.fen();
+	var newFen = '';
+	console.log(fen);
+	// Increment the turn number if the current player is black and the next turn
+	// is white.
+	if (fen.search(' w ') != -1) {
+		var newFenArr = fen.split(' ');
+		newFenArr[5] = (Number(newFenArr[5])++).toString();
+		newFen = newFenArr.join();
+	}
+	console.log(newFen);
+
+	updateStatus();
 };
 
-
 var bitSum = function(i) {
-    var sum = 0;
-    while (i > 0) {
-        sum = sum + i % 2;
-        i = Math.floor(i / 2);
-    }
-    return sum%2;
+	var sum = 0;
+	while (i > 0) {
+		sum = sum + i % 2;
+		i = Math.floor(i / 2);
+	}
+	return sum%2;
 };
 
 // Update the board after piece is done snapping
 // chessboardjs.com/examples#5000
 var onSnapEnd = function() {
-    board.position(game.fen());
+	var state = game.fen();
+	if (state.indexOf('w') > -1 && turns[0] === 'b') {
+		state.replace('w', 'b');
+	}
+	else if (state.indexOf('b') > -1 && turns[0] === 'w'){
+		state.replace('b', 'w');
+	}
+	game.load(state);
+	board.position(state);
 };
 
 // Update the turn
 // Modified chessboardjs.com/examples#5000
 var updateStatus = function() {
 
-    var messageNumb = turn_count.toString();
-    var message = '';
-	var moveColor = "White";
-    var messages = [];
-    var moveColors = [];
+	var messageNumb = turnCount.toString();
+	var message = '';
+	var moveColor = 'White';
+	var messages = [];
+	var moveColors = [];
 
+	for (i = 0; i <= 12; i++) {
+		messages[i] = '';
+		moveColors[i] = (turns[i] === 'b' ? 'Black' : 'White');
+	}
 
-    for (i = 0; i <= 12; i++) {
-        messages[i] = '';
-        moveColors[i] = (turns[i] === 'b' ? 'Black' : 'White');
-    }
+	if (game.in_checkmate() === true) {
+		message = 'Game over: ' + moveColors[0] + ' is checkmated.';
+	}
+	else if (game.in_draw() === true) {
+		message = 'Game over: Draw';
+	}
+	else {
+		message = 'No Check';
 
+		for (i = 0; i <= 12; i++) {
+			messages[i] = moveColors[i] + ' to move';
+		}
 
-    if (game.in_checkmate() === true) {
-        message = 'Game over: ' + moveColors[0] + ' is checkmated.';
-    } else if (game.in_draw() === true) {
-        message = 'Game over: Draw';
-    } else {
-        message = 'No Check';
-		
-        for (i = 0; i <= 12; i++) {
-            messages[i] = moveColors[i] + ' to move';
-        }
+		if (game.in_check() === true) {
+			message += ', ' + moveColors[0] + ' is in check';
+		}
+	}
 
-        if (game.in_check() === true) {
-            message += ', ' + moveColors[0] + ' is in check';
-        }
-    }
-
-    messageFieldNumb.html(messageNumb);
-    messageField.html(message);
-    for (i = 0; i <= 12; i++) {
-        messageFields[i].html(messages[i]);
-    }
+	messageFieldNumb.html(messageNumb);
+	messageField.html(message);
+	for (i = 0; i <= 12; i++) {
+		messageFields[i].html(messages[i]);
+	}
+	game.turn = (turns[0] === 'w' ? game.WHITE : game.BLACK);
+	console.log(turns[0] + " turn");
 };
 
 var init = function() {
+	var boardConfig = {
+		draggable: true,
+		dropOffBoard: 'snapback',
+		onDragStart: onDragStart,
+		onDrop: onDrop,
+		onSnapEnd: onSnapEnd,
+		position: 'start'
+	};
 
-    
-
-    var boardConfig = {
-        draggable: true,
-        dropOffBoard: 'snapback',
-        onDragStart: onDragStart,
-        onDrop: onDrop,
-        onSnapEnd: onSnapEnd,
-        position: 'start'
-    };
-
-    board = ChessBoard('board', boardConfig);
-    updateStatus();
+	board = ChessBoard('board', boardConfig);
+	updateStatus();
 };
 
 $(document).ready(init);
