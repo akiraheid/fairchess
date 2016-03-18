@@ -82,7 +82,6 @@ var onSnapEnd = function() {
 // Update the turn
 // Modified chessboardjs.com/examples#5000
 var updateStatus = function() {
-
 	var messageNumb = turnCount.toString();
 	var message = '';
 	var moveColor = 'White';
