@@ -7,4 +7,4 @@ Check out the projects we used!
 * [chessboard.js](https://github.com/oakmac/chessboardjs/)
 * [jQuery](https://jquery.com)
 
-A collaborative effort by myself and [@bbeallo12](https://github.com/bbeallo12]
+A collaborative effort by myself and [@bbeallo12](https://github.com/bbeallo12)
