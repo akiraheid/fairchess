@@ -5,6 +5,8 @@ var messageField = $('#message');
 var messageFields = [];
 var turns = ['w','b','b','w','b','w','w','b','b','w','w','b','w'];
 var turnCount = 0;
+var kingTaken = false;
+var gameOver = false;
 
 messageFields[0] = $('#message0');
 messageFields[1] = $('#message1');
@@ -22,49 +24,66 @@ messageFields[12] = $('#message12');
 
 // Only move if it is their turn and game is not over.
 // Modified chessboardjs.com/examples#5000
-var onDragStart = function(source, piece, position, orientation) {
-	if (game.game_over() === true ||
-			(turns[0] === 'w' && piece.search(/^b/) !== -1) ||
-			(turns[0] === 'b' && piece.search(/^w/) !== -1)) {
+function onDragStart(source, piece, position, orientation) {
+	if (gameOver
+		|| (turns[0] === 'w' && piece.search(/^b/) !== -1)
+		|| (turns[0] === 'b' && piece.search(/^w/) !== -1)) {
 		return false;
 	}
 };
 
 // Move if legal
 // Modified chessboardjs.com/examples#5000
-var onDrop = function(source, target) {
+function onDrop(source, target) {
+	let pos = board.position();
+	let movingPiece = pos[source];
+	let oldFen = game.fen().split(' ');
+
+	let otherColor = (oldFen[1] == 'w' ? 'b' : 'w');
+	// End the game if the taken piece is a king of the opposite color
+	if (pos[target] == (otherColor + 'K')) {
+		console.log('King taken')
+		delete pos[source];
+		pos[target] = movingPiece;
+		board.position(pos, false);
+		kingTaken = true;
+		updateStatus();
+		return;
+	}
+
 	var move = game.move({
 		from: source,
 		to: target,
 		promotion: 'q' // TODO Make promotion option
 	});
 
+	// Illegal move
 	if (move === null) {
 		return 'snapback';
 	}
 
-	// Valid move
+	// Update next and future turns
 	turnCount = turnCount + 1;
 	for (i = 0; i < 12; i++) {
 		turns[i] = (bitSum(turnCount + i) === 0 ? 'w' : 'b');
 	}
 
-	var fen = game.fen();
-	var newFenArr = fen.split(' ');
-	// Increment the turn number if the current player is black and the next turn
-	// is white.
-	if (fen.search(' w ') != -1 && turns[i] == 'b') {
-		var tmp = Number(newFenArr[5]) + 1;
-		newFenArr[5] = tmp.toString();
-	}
+	// Update game fen
+	let fen = game.fen().split(' ');
 
-	// Change the turn based on turns[]
-	newFenArr[1] = turns[0];
-	game.load(newFenArr.join(' '));
+	// Remove info about en passant target square if the same player is moving
+	// again
+	if (oldFen[1] == turns[0]) {
+		fen[3] = '-';
+	}
+	fen[1] = turns[0];
+	fen[5] = turnCount;
+	game.load(fen.join(' '));
+
 	updateStatus();
 };
 
-var bitSum = function(i) {
+function bitSum(i) {
 	var sum = 0;
 	while (i > 0) {
 		sum = sum + i % 2;
@@ -73,15 +92,9 @@ var bitSum = function(i) {
 	return sum%2;
 };
 
-// Update the board after piece is done snapping
-// chessboardjs.com/examples#5000
-var onSnapEnd = function() {
-	board.position(game.fen());
-};
-
 // Update the turn
 // Modified chessboardjs.com/examples#5000
-var updateStatus = function() {
+function updateStatus() {
 	var messageNumb = turnCount.toString();
 	var message = '';
 	var moveColor = 'White';
@@ -93,11 +106,17 @@ var updateStatus = function() {
 		moveColors[i] = (turns[i] === 'b' ? 'Black' : 'White');
 	}
 
-	if (game.in_checkmate() === true) {
+	if (game.in_checkmate()) {
+		gameOver = true;
 		message = 'Game over: ' + moveColors[0] + ' is checkmated.';
 	}
-	else if (game.in_draw() === true) {
+	else if (game.in_draw()) {
+		gameOver = true;
 		message = 'Game over: Draw';
+	}
+	else if (kingTaken) {
+		gameOver = true;
+		message = 'Game over: King taken';
 	}
 	else {
 		message = 'No Check';
@@ -117,6 +136,15 @@ var updateStatus = function() {
 		messageFields[i].html(messages[i]);
 	}
 };
+
+// Update board for things like en passant
+function onSnapEnd() {
+	// Board was already changed and disabled if the king was taken
+	if (!kingTaken) {
+		board.position(game.fen());
+		console.log(game.fen());
+	}
+}
 
 var init = function() {
 	var boardConfig = {
