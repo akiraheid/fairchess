@@ -1,0 +1,25 @@
+{
+  "name": "fairchess",
+  "version": "0.0.1",
+  "description": "We love chess, but is it fair?",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akiraheid/FairChess.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/akiraheid/FairChess/issues"
+  },
+  "homepage": "https://github.com/akiraheid/FairChess#readme",
+  "dependencies": {
+    "chess.js": "^0.10.2",
+    "express": "^4.16.4",
+    "socket.io": "^2.2.0",
+    "uuid": "^3.3.2"
+  }
+}

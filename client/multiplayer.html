@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel='stylesheet' type'text/css' href='client/css/chessboardjs/chessboard-0.3.0.min.css'>
+		<link rel='stylesheet' type'text/css' href='client/css/style.css'>
+		<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+		<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js'></script>
+		<script type='text/javascript' src='client/js/chessboardjs/chessboard-0.3.0.min.js'></script>
+		<script type='text/javascript' src='client/js/chessjs/chess.min.js'></script>
+	</head>
+	<body>
+		<div id='waiting'>
+			<h1>Waiting for another player...</h1>
+		</div>
+		<div id='game'>
+			<div class='page-wrap'>
+				<h1>Fair Chess</h1>
+				<div id='board' style='width: 400px'></div>
+			</div>
+			<div class='turns-text'>
+				<p>Status: <span id='message'></span></p>
+				<p id ='current'>Current Turn: <span id='message0'></span></p>
+				<p>1st Next Turn: <span id='message1'></span></p>
+				<p>2nd Next Turn: <span id='message2'></span></p>
+				<p>3rd Next Turn: <span id='message3'></span></p>
+				<p>4th Next Turn: <span id='message4'></span></p>
+				<p>5th Next Turn: <span id='message5'></span></p>
+				<p>6th Next Turn: <span id='message6'></span></p>
+				<p>7th Next Turn: <span id='message7'></span></p>
+				<p>8th Next Turn: <span id='message8'></span></p>
+				<p>9th Next Turn: <span id='message9'></span></p>
+				<p>10th Next Turn: <span id='message10'></span></p>
+				<p>11th Next Turn: <span id='message11'></span></p>
+				<p>12th Next Turn: <span id='message12'></span></p>
+			</div>
+		</div>
+		<div class='site-footer'>
+			Check out the <a href='https://github.com/akiraheid/FairChess'>source code</a>!
+		</div>
+		<script type='text/javascript' src='client/js/gameLogic.js'></script>
+	</body>
+</html>

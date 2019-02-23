@@ -1,6 +1,6 @@
 var board;
+var socket = io();
 var game = new Chess();
-var messageFieldNumb = $('#messageNumb');
 var messageField = $('#message');
 var messageFields = [];
 var turns = ['w','b','b','w','b','w','w','b','b','w','w','b','w'];
@@ -62,25 +62,7 @@ function onDrop(source, target) {
 		return 'snapback';
 	}
 
-	// Update next and future turns
-	turnCount = turnCount + 1;
-	for (i = 0; i < 12; i++) {
-		turns[i] = (bitSum(turnCount + i) === 0 ? 'w' : 'b');
-	}
-
-	// Update game fen
-	let fen = game.fen().split(' ');
-
-	// Remove info about en passant target square if the same player is moving
-	// again
-	if (oldFen[1] == turns[0]) {
-		fen[3] = '-';
-	}
-	fen[1] = turns[0];
-	fen[5] = turnCount;
-	game.load(fen.join(' '));
-
-	updateStatus();
+	socket.emit('move-request', {source: source, target: target})
 };
 
 function bitSum(i) {
@@ -102,6 +84,7 @@ function updateStatus() {
 	var moveColors = [];
 
 	for (i = 0; i <= 12; i++) {
+		turns[i] = bitSum(turnCount + i) === 0 ? 'w' : 'b';
 		messages[i] = '';
 		moveColors[i] = (turns[i] === 'b' ? 'Black' : 'White');
 	}
@@ -130,11 +113,13 @@ function updateStatus() {
 		}
 	}
 
-	messageFieldNumb.html(messageNumb);
 	messageField.html(message);
+
 	for (i = 0; i <= 12; i++) {
 		messageFields[i].html(messages[i]);
 	}
+
+	console.log(turns)
 };
 
 // Update board for things like en passant
@@ -146,18 +131,44 @@ function onSnapEnd() {
 	}
 }
 
-var init = function() {
+function updateMove(data) {
+	game.load(data.fen);
+	board.position(data.fen);
+	turnCount = data.turn;
+	updateStatus();
+}
+
+socket.on('move-accepted', data => {
+	console.log('Move accepted ' + data.fen);
+	updateMove(data);
+});
+
+socket.on('other-move', data => {
+	console.log('Opponent moved ' + data.fen)
+	updateMove(data);
+});
+
+socket.on('multiplayer-found', data => {
+	console.log('found another player ' + data.opponentID);
+
 	var boardConfig = {
 		draggable: true,
 		dropOffBoard: 'snapback',
 		onDragStart: onDragStart,
 		onDrop: onDrop,
 		onSnapEnd: onSnapEnd,
-		position: 'start'
+		position: 'start',
+		pieceTheme: 'client/img/chesspieces/wikipedia/{piece}.png',
+		orientation: data.isWhite ? 'white' : 'black'
 	};
-
 	board = ChessBoard('board', boardConfig);
 	updateStatus();
+	$('#game').css('display', 'inline');
+	$('#waiting').css('display', 'none');
+})
+
+var init = function() {
+	socket.emit('multiplayer-searching', {});
 };
 
 $(document).ready(init);
