@@ -29,7 +29,7 @@ let games = new Map()
 function matchPlayer(socket) {
 	console.log('multiplayer search ' + socket.id)
 	// No other players waiting so try to match during the periodic match
-	if (unmatchedPlayers.length == 0) {
+	if (unmatchedPlayers.length === 0) {
 		unmatchedPlayers.push(socket.id)
 		console.log('Added to queue ' + socket.id)
 		return
@@ -93,18 +93,29 @@ function getGameState(id1, id2) {
 function acceptMove(socket, data, newFEN, state) {
 	console.log('Accept move ' + socket.id + ' ' + data.source + data.target)
 	let otherPlayerID = matchedPlayers.get(socket.id)
+	let requestorColor = ((state.white === socket.id) ? 'w' : 'b')
+
+	let method =
+		game.getWinMethod(state.fen, requestorColor, data.source, data.target)
+	let winner = ((method === null) ? null : requestorColor)
 
 	state.fen = newFEN
 	state.turnNum = state.turnNum + 1
-	let update = {fen: state.fen, turn: state.turnNum}
+	let update = {
+		fen: state.fen,
+		turn: state.turnNum,
+		winner: winner,
+		winBy: method
+	}
 
 	socket.emit('move-accepted', update)
 	sockets.get(otherPlayerID).emit('other-move', update)
 }
 
-function rejectMove(socket, data) {
+function rejectMove(socket, data, state) {
 	console.log('Reject move ' + socket.id + ' ' + data.source + data.target)
-	socket.emit('move-rejected', {})
+	let update = {fen: state.fen, turn: state.turnNum, gameOver: false}
+	socket.emit('move-rejected', update)
 }
 
 function moveRequested(socket, data) {
@@ -112,12 +123,18 @@ function moveRequested(socket, data) {
 
 	let otherPlayerID = matchedPlayers.get(socket.id)
 	let state = getGameState(socket.id, otherPlayerID)
-	console.log(state)
+
+	let requestorColor = ((state.white === socket.id) ? 'w' : 'b')
+	if (requestorColor != game.getTurnColor(state.turnNum)) {
+		rejectMove(socket, data, state)
+		return
+	}
+
 	let nextFEN = game.getNextFEN(state, data.source, data.target)
-	console.log(nextFEN)
+	console.log(socket.id + ' ' + nextFEN)
 	nextFEN !== null
 		? acceptMove(socket, data, nextFEN, state)
-		: rejectMove(socket, data)
+		: rejectMove(socket, data, state)
 }
 
 io.sockets.on('connection', socket => {

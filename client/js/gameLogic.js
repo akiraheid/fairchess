@@ -27,7 +27,8 @@ messageFields[12] = $('#message12');
 function onDragStart(source, piece, position, orientation) {
 	if (gameOver
 		|| (turns[0] === 'w' && piece.search(/^b/) !== -1)
-		|| (turns[0] === 'b' && piece.search(/^w/) !== -1)) {
+		|| (turns[0] === 'b' && piece.search(/^w/) !== -1)
+		|| ((turns[0] === 'w') ? 'white' : 'black') !== orientation) {
 		return false;
 	}
 };
@@ -35,26 +36,10 @@ function onDragStart(source, piece, position, orientation) {
 // Move if legal
 // Modified chessboardjs.com/examples#5000
 function onDrop(source, target) {
-	let pos = board.position();
-	let movingPiece = pos[source];
-	let oldFen = game.fen().split(' ');
-
-	let otherColor = (oldFen[1] == 'w' ? 'b' : 'w');
-	// End the game if the taken piece is a king of the opposite color
-	if (pos[target] == (otherColor + 'K')) {
-		console.log('King taken')
-		delete pos[source];
-		pos[target] = movingPiece;
-		board.position(pos, false);
-		kingTaken = true;
-		updateStatus();
-		return;
-	}
-
 	var move = game.move({
 		from: source,
 		to: target,
-		promotion: 'q' // TODO Make promotion option
+		promotion: 'q'
 	});
 
 	// Illegal move
@@ -76,7 +61,7 @@ function bitSum(i) {
 
 // Update the turn
 // Modified chessboardjs.com/examples#5000
-function updateStatus() {
+function updateStatus(winner, method) {
 	var messageNumb = turnCount.toString();
 	var message = '';
 	var moveColor = 'White';
@@ -84,26 +69,26 @@ function updateStatus() {
 	var moveColors = [];
 
 	for (i = 0; i <= 12; i++) {
-		turns[i] = bitSum(turnCount + i) === 0 ? 'w' : 'b';
+		turns[i] = ((bitSum(turnCount + i) === 0) ? 'w' : 'b');
 		messages[i] = '';
-		moveColors[i] = (turns[i] === 'b' ? 'Black' : 'White');
+		moveColors[i] = ((turns[i] === 'b') ? 'Black' : 'White');
 	}
 
-	if (game.in_checkmate()) {
-		gameOver = true;
-		message = 'Game over: ' + moveColors[0] + ' is checkmated.';
-	}
-	else if (game.in_draw()) {
-		gameOver = true;
-		message = 'Game over: Draw';
-	}
-	else if (kingTaken) {
-		gameOver = true;
-		message = 'Game over: King taken';
-	}
-	else {
-		message = 'No Check';
+	message = 'No Check';
 
+	if (winner !== null) {
+		gameOver = true;
+		if (method === 'mate') {
+			message = 'Game over: ' + moveColors[0] + ' checkmated';
+		} else if (method === 'draw') {
+			message = 'Game over: draw';
+		} else if (method === 'stalemate') {
+			message = 'Game over: stalemate';
+		} else if (method === 'king') {
+			kingTaken = true;
+			message = 'Game over: ' + moveColors[0] + ' king taken';
+		}
+	} else {
 		for (i = 0; i <= 12; i++) {
 			messages[i] = moveColors[i] + ' to move';
 		}
@@ -118,8 +103,6 @@ function updateStatus() {
 	for (i = 0; i <= 12; i++) {
 		messageFields[i].html(messages[i]);
 	}
-
-	console.log(turns)
 };
 
 // Update board for things like en passant
@@ -127,19 +110,23 @@ function onSnapEnd() {
 	// Board was already changed and disabled if the king was taken
 	if (!kingTaken) {
 		board.position(game.fen());
-		console.log(game.fen());
 	}
 }
 
 function updateMove(data) {
 	game.load(data.fen);
-	board.position(data.fen);
+	board.position(data.fen.split(' ')[0], true);
 	turnCount = data.turn;
-	updateStatus();
+	updateStatus(data.winner, data.winBy);
 }
 
 socket.on('move-accepted', data => {
 	console.log('Move accepted ' + data.fen);
+	updateMove(data);
+});
+
+socket.on('move-rejected', data => {
+	console.log('Move rejected ' + data.fen);
 	updateMove(data);
 });
 
@@ -162,10 +149,10 @@ socket.on('multiplayer-found', data => {
 		orientation: data.isWhite ? 'white' : 'black'
 	};
 	board = ChessBoard('board', boardConfig);
-	updateStatus();
+	updateStatus(null, null);
 	$('#game').css('display', 'inline');
 	$('#waiting').css('display', 'none');
-})
+});
 
 var init = function() {
 	socket.emit('multiplayer-searching', {});
