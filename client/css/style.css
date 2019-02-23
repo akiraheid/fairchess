@@ -28,7 +28,11 @@
 	line-height: 10px;
 }
 
-#current{
+#current {
 	font-size: 16px;
 	background-color: #FFFF00;
+}
+
+#game {
+	display: none;
 }
