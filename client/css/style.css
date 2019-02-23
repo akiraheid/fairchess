@@ -28,6 +28,10 @@
 	line-height: 10px;
 }
 
+#board {
+	width: 400px;
+}
+
 #current {
 	font-size: 16px;
 	background-color: #FFFF00;
