@@ -1,0 +1,11 @@
+#game {
+	display: 'none';
+}
+
+#turn-0 {
+	height: 1rem;
+}
+
+div[id^='message-'] {
+	height: 1.5rem;
+}
