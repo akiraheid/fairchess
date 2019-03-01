@@ -51,23 +51,23 @@ exports.getNextFEN = (state, source, target) => {
 		from: source,
 		to: target,
 		promotion: 'q'
-	});
+	})
 
 	if (move !== null) {
-		let turnCount = state.turnNum + 1;
+		let turnCount = state.turnNum + 1
 		let nextTurn = exports.getTurnColor(state.turnNum + 1)
 
 		// Update game fen
 		let oldFEN = state.fen.split(' ')
 		let fen = game.fen().split(' ')
 
-		// Remove info about en passant target square if the same player is moving
-		// again
+		// Remove info about en passant target square if the same player is
+		// moving again
 		if (oldFEN[1] === nextTurn) {
-			fen[3] = '-';
+			fen[3] = '-'
 		}
-		fen[1] = nextTurn;
-		fen[5] = turnCount;
+		fen[1] = nextTurn
+		fen[5] = turnCount
 
 		return fen.join(' ')
 	}
