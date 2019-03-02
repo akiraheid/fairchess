@@ -52,8 +52,10 @@ function matchPlayer(socket) {
 			turnNum: 0
 		}
 
+		// Key the game with the players
 		games.set(socket.id + otherPlayerID, gameInfo)
 
+		// Map players as matched to each other
 		matchedPlayers.set(socket.id, otherPlayerID)
 		matchedPlayers.set(otherPlayerID, socket.id)
 
@@ -118,11 +120,24 @@ function rejectMove(socket, data, state) {
 	socket.emit('move-rejected', update)
 }
 
+function validData(data) {
+	let boardSquareReg = /[a-h][1-8]/
+	if (!boardSquareReg.test(data.source)
+		|| !boardSquareReg.test(data.target)) {
+		return false
+	}
+	return true
+}
+
 function moveRequested(socket, data) {
 	console.log('Move request ' + socket.id + ' ' + data.source + data.target)
 
 	let otherPlayerID = matchedPlayers.get(socket.id)
 	let state = getGameState(socket.id, otherPlayerID)
+
+	if (!validData(data)) {
+		rejectMove(socket, data, state)
+	}
 
 	let requestorColor = ((state.white === socket.id) ? 'w' : 'b')
 	if (requestorColor != game.getTurnColor(state.turnNum)) {
