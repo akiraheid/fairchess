@@ -109,6 +109,15 @@ function updateMove(data) {
 	updateStatus(data.winner, data.winBy);
 }
 
+function displayError(err) {
+	$('#error').css('display', '');
+	$('#error').text(err);
+}
+
+socket.on('no-game', data => {
+	displayError('Error: Sorry! We couldn\'t find your game :/\nPlease refresh the page');
+});
+
 socket.on('move-accepted', data => {
 	console.log('Move accepted ' + data.fen);
 	updateMove(data);
@@ -122,6 +131,10 @@ socket.on('move-rejected', data => {
 socket.on('other-move', data => {
 	console.log('Opponent moved ' + data.fen)
 	updateMove(data);
+});
+
+socket.on('reconnect_error', data => {
+	displayError('Error: Connection lost. Please refresh the page');
 });
 
 function resize() {
@@ -156,6 +169,7 @@ socket.on('multiplayer-found', data => {
 var init = function() {
 	socket.emit('multiplayer-searching', {});
 	$('#game').css('display', 'none');
+	$('#error').css('display', 'none');
 };
 
 $(document).ready(init);
