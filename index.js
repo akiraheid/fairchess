@@ -87,6 +87,9 @@ function playerDisconnected(playerID) {
 	}
 }
 
+// Get the game for the players with the given IDs
+//
+// @return The game if it exists; undefined otherwise
 function getGameState(id1, id2) {
 	let id = id1 + id2
 	return games.has(id) ? games.get(id) : games.get(id2 + id1)
@@ -120,6 +123,13 @@ function rejectMove(socket, data, state) {
 	socket.emit('move-rejected', update)
 }
 
+function sendGameDoesntExist(socket, data) {
+	console.log('Got move request for ' + socket.id
+		+ ' but a game doesn\'t exist')
+
+	socket.emit('no-game', undefined)
+}
+
 function validData(data) {
 	let boardSquareReg = /[a-h][1-8]/
 	if (!boardSquareReg.test(data.source)
@@ -135,8 +145,14 @@ function moveRequested(socket, data) {
 	let otherPlayerID = matchedPlayers.get(socket.id)
 	let state = getGameState(socket.id, otherPlayerID)
 
+	if (state === undefined) {
+		sendGameDoesntExist(socket, data)
+		return
+	}
+
 	if (!validData(data)) {
 		rejectMove(socket, data, state)
+		return
 	}
 
 	let requestorColor = ((state.white === socket.id) ? 'w' : 'b')
@@ -158,14 +174,26 @@ io.sockets.on('connection', socket => {
 	console.log('+ Connection ' + socket.id)
 
 	socket.on('multiplayer-searching', data => {
-		matchPlayer(socket)
+		try {
+			matchPlayer(socket)
+		} catch (e) {
+			console.log(e)
+		}
 	})
 
 	socket.on('disconnect', data => {
-		playerDisconnected(socket.id)
+		try {
+			playerDisconnected(socket.id)
+		} catch (e) {
+			console.log(e)
+		}
 	})
 
 	socket.on('move-request', data => {
-		moveRequested(socket, data)
+		try {
+			moveRequested(socket, data)
+		} catch (e) {
+			console.log(e)
+		}
 	})
 })
