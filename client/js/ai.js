@@ -8,6 +8,7 @@ var turnCount = 0;
 var kingTaken = false;
 var gameOver = false;
 var aiColor;
+var lastClick = null;
 
 // Only move if it is their turn and game is not over.
 // Modified chessboardjs.com/examples#5000
@@ -68,12 +69,25 @@ function getNextState(fen, source, target) {
 // Move if legal
 // Modified chessboardjs.com/examples#5000
 function onDrop(source, target) {
+	if (source === target) {
+		// Toggle selection
+		lastClick = lastClick === null ? source : null;
+		$('[id^='+source+'-]').toggleClass(
+			'square-highlight', lastClick !== null);
+
+		return 'snapback';
+	}
+
 	tmpGame.load(game.fen());
 	var move = tmpGame.move({
 		from: source,
 		to: target,
 		promotion: 'q'
 	});
+
+	lastClick = null;
+	$('[id^='+source+'-]').removeClass('square-highlight');
+	$('[id^='+target+'-]').removeClass('square-highlight');
 
 	// Illegal move
 	if (move === null) {
@@ -207,6 +221,12 @@ function aiMove() {
 	updateMove(nextState, true);
 }
 
+function onEmptySquareClick(event) {
+	if (lastClick !== null) {
+		onDrop(lastClick, event.data);
+	}
+}
+
 var init = function() {
 	aiColor = Math.floor(Math.random() * 10) < 5 ? 'w' : 'b'
 
@@ -225,6 +245,13 @@ var init = function() {
 	$('#game').css('display', '');
 	resize();
 	$(window).resize(resize);
+
+	// Add click events to squares for click moving instead of dragging
+	$('#board > div > div').children().each(function() {
+		$(this).children().each(function() {
+			$(this).click($(this).attr('data-square'), onEmptySquareClick);
+		});
+	});
 
 	// Move AI if AI is white
 	if (aiColor === 'w') {
