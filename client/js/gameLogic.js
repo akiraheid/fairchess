@@ -7,6 +7,7 @@ var turns = ['w','b','b','w','b','w','w','b','b','w','w','b','w'];
 var turnCount = 0;
 var kingTaken = false;
 var gameOver = false;
+var lastClick = null;
 
 // Only move if it is their turn and game is not over.
 // Modified chessboardjs.com/examples#5000
@@ -22,11 +23,24 @@ function onDragStart(source, piece, position, orientation) {
 // Move if legal
 // Modified chessboardjs.com/examples#5000
 function onDrop(source, target) {
+	if (source === target) {
+		// Toggle selection
+		lastClick = lastClick === null ? source : null;
+		$('[id^='+source+'-]').toggleClass(
+			'square-highlight', lastClick !== null);
+
+		return 'snapback';
+	}
+
 	var move = game.move({
 		from: source,
 		to: target,
 		promotion: 'q'
 	});
+
+	lastClick = null;
+	$('[id^='+source+'-]').removeClass('square-highlight');
+	$('[id^='+target+'-]').removeClass('square-highlight');
 
 	// Illegal move
 	if (move === null) {
@@ -107,6 +121,7 @@ function updateMove(data) {
 	board.position(data.fen.split(' ')[0], true);
 	turnCount = data.turn;
 	updateStatus(data.winner, data.winBy);
+	lastClick = null
 }
 
 function displayError(err) {
@@ -145,6 +160,12 @@ function resize() {
 	$("div[id^='board-']").css('left', '');
 }
 
+function onEmptySquareClick(event) {
+	if (lastClick !== null) {
+		onDrop(lastClick, event.data);
+	}
+}
+
 socket.on('multiplayer-found', data => {
 	console.log('found another player ' + data.opponentID);
 
@@ -164,6 +185,13 @@ socket.on('multiplayer-found', data => {
 	$('#waiting').css('display', 'none');
 	resize();
 	$(window).resize(resize);
+
+	// Add click events to squares for click moving instead of dragging
+	$('#board > div > div').children().each(function() {
+		$(this).children().each(function() {
+			$(this).click($(this).attr('data-square'), onEmptySquareClick);
+		});
+	});
 });
 
 var init = function() {
