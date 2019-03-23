@@ -8,12 +8,6 @@ const game = require('./js/game.js')
 app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/client/index.html')
 })
-app.get('/ai', (req, res) => {
-	res.sendFile(__dirname + '/client/ai.html')
-})
-app.get('/multiplayer', (req, res) => {
-	res.sendFile(__dirname + '/client/multiplayer.html')
-})
 app.use('/client', express.static(__dirname + '/client'))
 
 const PORT = 8082
