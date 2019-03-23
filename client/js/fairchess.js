@@ -216,7 +216,7 @@ function aiMove() {
 
 function updateMove(data, animate) {
 	game.load(data.fen);
-	board.position(data.fen.split(' ')[0], true);
+	board.position(data.fen.split(' ')[0], animate);
 	turnCount = data.turn;
 	gameOver = data.gameOver
 	lastClick = null
