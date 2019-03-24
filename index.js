@@ -3,12 +3,47 @@ const app = express()
 const serv = require('http').Server(app)
 const io = require('socket.io')(serv, {})
 const uuid = require('uuid/v4')
+const fs = require('fs')
 const game = require('./js/game.js')
 
-app.get('/', (req, res) => {
+// URIs
+FAIRCHESS_ROOT = process.env.FAIRCHESS_ROOT || '/'
+CLIENT_PATH = FAIRCHESS_ROOT + (FAIRCHESS_ROOT === '/' ? '' : '/') + 'client'
+
+// File paths
+TEMPLATE_INDEX = __dirname + '/index.html.template'
+GENERATED_INDEX = __dirname + '/client/index.html'
+TEMPLATE_JS = __dirname + '/fairchess.js.template'
+GENERATED_JS = __dirname + '/client/js/fairchess.js'
+
+console.log(`ROOT: '${FAIRCHESS_ROOT}'`)
+
+// Generate index.html with configured root
+fs.readFile(TEMPLATE_INDEX, 'utf8', (err, data) => {
+	if (err) { return console.log(err) }
+
+	let result = data.replace(/fairchess_client/g, CLIENT_PATH)
+	fs.writeFile(GENERATED_INDEX, result, 'utf8', err => {
+		if (err) { return console.log(err) }
+		console.log(`Generated ${GENERATED_INDEX}`)
+	})
+})
+
+// Generate fairchess.js with configured root
+fs.readFile(TEMPLATE_JS, 'utf8', (err, data) => {
+	if (err) { return console.log(err) }
+
+	let result = data.replace(/fairchess_client/g, CLIENT_PATH)
+	fs.writeFile(GENERATED_JS, result, 'utf8', err => {
+		if (err) { return console.log(err) }
+		console.log(`Generated ${GENERATED_JS}`)
+	})
+})
+
+app.get(FAIRCHESS_ROOT, (req, res) => {
 	res.sendFile(__dirname + '/client/index.html')
 })
-app.use('/client', express.static(__dirname + '/client'))
+app.use(CLIENT_PATH, express.static(__dirname + '/client'))
 
 const PORT = 8082
 serv.listen(PORT)

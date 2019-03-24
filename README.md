@@ -8,6 +8,14 @@ The same rules as regular chess but with the turn order changed! Some side effec
 * Kings can be taken as a second move
 * Players can't move through check
 
+## Configuration
+The server has an optional root path that can be configured by setting the `FAIRCHESS_ROOT` environment variable to be the desired URI. By default, the URI is the root URI (`/`).
+
+Set the root URI to be something other than the default. Note that the specified URI must start with a `/`.
+```
+$ export FAIRCHESS_ROOT="/fairchess"
+```
+
 ## Support
 Check out the projects that made this possible:
 * [chess.js](https://github.com/jhlywa/chess.js)
