@@ -11,9 +11,9 @@ FAIRCHESS_ROOT = process.env.FAIRCHESS_ROOT || '/'
 CLIENT_PATH = FAIRCHESS_ROOT + (FAIRCHESS_ROOT === '/' ? '' : '/') + 'client'
 
 // File paths
-TEMPLATE_INDEX = __dirname + '/index.html.template'
+TEMPLATE_INDEX = __dirname + '/index.template.html'
 GENERATED_INDEX = __dirname + '/client/index.html'
-TEMPLATE_JS = __dirname + '/fairchess.js.template'
+TEMPLATE_JS = __dirname + '/fairchess.template.js'
 GENERATED_JS = __dirname + '/client/js/fairchess.js'
 
 console.log(`ROOT: '${FAIRCHESS_ROOT}'`)
