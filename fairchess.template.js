@@ -297,10 +297,10 @@ function orientBoard() {
 	board.orientation(opponentColor === WHITE ? 'black' : 'white')
 }
 
-function chooseGame(vsHuman) {
+function chooseGame(event) {
 	resetGame()
-	againstHuman = vsHuman
-	if (vsHuman) {
+	againstHuman = event.data
+	if (againstHuman) {
 		enableSocket()
 		socket.emit('multiplayer-searching', {});
 	} else {
@@ -314,13 +314,13 @@ function chooseGame(vsHuman) {
 	}
 
 	goToPage(againstHuman ? WAIT_PAGE : GAME_PAGE)
-	$('#back-button').removeClass('d-none')
+	$('#back-btn').removeClass('d-none')
 }
 
 function back() {
 	socket.close()
 	goToPage(HOME_PAGE)
-	$('#back-button').addClass('d-none')
+	$('#back-btn').addClass('d-none')
 }
 
 function hideAllPages() {
@@ -370,6 +370,10 @@ var init = function() {
 	hideAllPages()
 	goToPage(HOME_PAGE)
 	$(window).resize(resize)
+
+	$('#back-btn').click(back)
+	$('#ai-btn').click(false, chooseGame)
+	$('#human-btn').click(true, chooseGame)
 }
 
 $(document).ready(init)
