@@ -15,7 +15,7 @@ var boardConfig = {
 	onDrop: onDrop,
 	onSnapEnd: onSnapEnd,
 	position: 'start',
-	pieceTheme: 'client/img/chesspieces/wikipedia/{piece}.png'
+	pieceTheme: 'fairchess_client/img/chesspieces/wikipedia/{piece}.png'
 }
 
 var socket = io(socketIOConfig)
@@ -185,15 +185,12 @@ function resize() {
 	// Add click events to squares for click moving instead of dragging
 	$('#board > div > div').children().each(function() {
 		$(this).children().each(function() {
-			console.log($(this).attr('id'))
-			console.log($(this).attr('data-square'))
 			$(this).click($(this).attr('data-square'), onEmptySquareClick)
 		})
 	})
 }
 
 function onEmptySquareClick(event) {
-	console.log(event)
 	if (lastClick !== null) {
 		onDrop(lastClick, event.data)
 	}
@@ -324,7 +321,6 @@ function back() {
 	socket.close()
 	goToPage(HOME_PAGE)
 	$('#back-button').addClass('d-none')
-	console.log('close socket')
 }
 
 function hideAllPages() {
@@ -339,7 +335,6 @@ function goToPage(page) {
 
 function enableSocket() {
 	socket.open()
-	console.log('open socket')
 	socket.on('no-game', data => {
 		displayError('Error: Sorry! We couldn\'t find your game :/\nPlease refresh the page')
 	})

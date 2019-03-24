@@ -1,1 +1,4 @@
 node_modules/
+
+client/js/fairchess.js
+client/index.html
