@@ -1,14 +1,20 @@
 const express = require('express')
 const app = express()
 const serv = require('http').Server(app)
-const io = require('socket.io')(serv, {})
 const uuid = require('uuid/v4')
 const fs = require('fs')
 const game = require('./js/game.js')
 
 // URIs
 FAIRCHESS_ROOT = process.env.FAIRCHESS_ROOT || '/'
-CLIENT_PATH = FAIRCHESS_ROOT + (FAIRCHESS_ROOT === '/' ? '' : '/') + 'client'
+CLIENT_URI = FAIRCHESS_ROOT + (FAIRCHESS_ROOT === '/' ? '' : '/') + 'client'
+SOCKET_IO_URI = FAIRCHESS_ROOT + (FAIRCHESS_ROOT === '/' ? '' : '/') + 'socket.io'
+
+var SOCKET_IO_CONFIG = {
+	path: SOCKET_IO_URI
+}
+const io = require('socket.io')(serv, SOCKET_IO_CONFIG)
+
 
 // File paths
 TEMPLATE_INDEX = __dirname + '/index.template.html'
@@ -22,7 +28,7 @@ console.log(`ROOT: '${FAIRCHESS_ROOT}'`)
 fs.readFile(TEMPLATE_INDEX, 'utf8', (err, data) => {
 	if (err) { return console.log(err) }
 
-	let result = data.replace(/fairchess_client/g, CLIENT_PATH)
+	let result = data.replace(/fairchess_client/g, CLIENT_URI)
 	fs.writeFile(GENERATED_INDEX, result, 'utf8', err => {
 		if (err) { return console.log(err) }
 		console.log(`Generated ${GENERATED_INDEX}`)
@@ -33,7 +39,8 @@ fs.readFile(TEMPLATE_INDEX, 'utf8', (err, data) => {
 fs.readFile(TEMPLATE_JS, 'utf8', (err, data) => {
 	if (err) { return console.log(err) }
 
-	let result = data.replace(/fairchess_client/g, CLIENT_PATH)
+	let result = data.replace(/fairchess_client/g, CLIENT_URI)
+	result = result.replace(/\/socket\.io/g, SOCKET_IO_URI)
 	fs.writeFile(GENERATED_JS, result, 'utf8', err => {
 		if (err) { return console.log(err) }
 		console.log(`Generated ${GENERATED_JS}`)
@@ -43,7 +50,7 @@ fs.readFile(TEMPLATE_JS, 'utf8', (err, data) => {
 app.get(FAIRCHESS_ROOT, (req, res) => {
 	res.sendFile(__dirname + '/client/index.html')
 })
-app.use(CLIENT_PATH, express.static(__dirname + '/client'))
+app.use(CLIENT_URI, express.static(__dirname + '/client'))
 
 const PORT = 8082
 serv.listen(PORT)

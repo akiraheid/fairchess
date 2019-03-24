@@ -5,7 +5,8 @@ WHITE = 'w'
 BLACK = 'b'
 
 var socketIOConfig = {
-	autoConnect: false
+	autoConnect: false,
+	path: '/socket.io'
 }
 
 var boardConfig = {
