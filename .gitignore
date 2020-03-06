@@ -1,4 +1,4 @@
 node_modules/
-
+.env
 client/js/fairchess.js
 client/index.html

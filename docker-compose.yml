@@ -1,0 +1,20 @@
+version: '3'
+services:
+    fairchess:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: fairchess
+        env_file: .env
+        environment:
+            - FAIRCHESS_ROOT=$FAIRCHESS_ROOT
+        image: fairchess
+        networks:
+            - app-network
+        ports:
+            - "3000:3000"
+        restart: unless-stopped
+
+networks:
+    app-network:
+        driver: bridge
