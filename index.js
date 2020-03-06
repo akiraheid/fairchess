@@ -52,7 +52,7 @@ app.get(FAIRCHESS_ROOT, (req, res) => {
 })
 app.use(CLIENT_URI, express.static(__dirname + '/client'))
 
-const PORT = 8082
+const PORT = 3000
 serv.listen(PORT)
 console.log('Server listening on port ' + PORT)
 
