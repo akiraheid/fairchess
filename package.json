@@ -1,18 +1,17 @@
 {
 	"name": "fairchess",
 	"version": "0.0.1",
+	"private": true,
 	"description": "We love chess, but is it fair?",
 	"main": "index.js",
 	"scripts": {
-		"start": "node index.js",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"start": "node index.js"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/akiraheid/FairChess.git"
 	},
-	"author": "",
-	"license": "MIT",
+	"license": "GPL-3.0-only",
 	"bugs": {
 		"url": "https://github.com/akiraheid/FairChess/issues"
 	},
