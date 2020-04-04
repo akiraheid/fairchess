@@ -1,0 +1,31 @@
+doctype html
+html(lang='en')
+	head
+		title Fair Chess
+		meta(charset='utf-8')
+		meta(name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no')
+		link(rel='stylesheet'
+			href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css'
+			integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO'
+			crossorigin='anonymous')
+
+		link(rel='stylesheet'
+			href='https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css'
+			integrity='sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU'
+			crossorigin='anonymous')
+
+		script(type="text/javascript"
+			src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js")
+
+		script(type='text/javascript'
+			src='/js/chessboardjs/chessboard-0.3.0.min.js'
+			crossorigin='anonymous')
+
+		link(rel='stylesheet' href='/css/style.css')
+
+	body.bg-dark.text-white: .container
+		include ./parts/header
+
+		include ./parts/board
+
+		script(type='application/javascript' src='/js/app.js')

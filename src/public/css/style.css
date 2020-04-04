@@ -1,0 +1,20 @@
+/* Expand empty element */
+#turn-0 {
+	height: 1rem;
+}
+
+/* Duplicate chessboardjs highlight because it removes its own */
+.square-highlight {
+	-webkit-box-shadow: inset 0 0 3px 3px yellow;
+	-moz-box-shadow: inset 0 0 3px 3px yellow;
+	box-shadow: inset 0 0 3px 3px yellow;
+}
+
+/* Expand empty element */
+div[id^='message-'] {
+	height: 1.5rem;
+}
+
+a, a:hover {
+	color: #FFF;
+}
