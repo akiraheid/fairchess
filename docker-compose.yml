@@ -7,7 +7,7 @@ services:
         container_name: fairchess
         env_file: .env
         environment:
-            - FAIRCHESS_ROOT=$FAIRCHESS_ROOT
+            - NODE_ENV=$NODE_ENV
         image: fairchess
         networks:
             - app-network

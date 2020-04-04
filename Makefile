@@ -1,19 +1,24 @@
-build: Dockerfile clean
+build: Dockerfile lint
 	docker build -t fairchess .
 
 clean:
-	-rm -r dist node_modules tests_output
+	-rm -r dist node_modules
+
+lint: node_modules
+	npx eslint . && echo "No issues"
 
 node_modules:
 	npm i
 
-serve: clean build
+serve: build
 	docker-compose up -d
 
 serve-down:
 	docker-compose down
 
 serve-log:
-	-docker-compose logs -f
+	-docker-compose logs -f fairchess
 
-.PHONY: serve
+test: lint
+
+.PHONY: build build-dist clean lint serve serve-down serve-log
