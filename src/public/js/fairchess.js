@@ -51,7 +51,7 @@ export const fairchess = function(startingFEN) {
 	// Extract the current turn count from the FEN.
 	function getTurnCountFromFEN(fen) {
 		const parts = fen.split(' ')
-		return Number(parts[4])
+		return Number(parts[5])
 	}
 
 	function inCheck() { return game.in_check() }

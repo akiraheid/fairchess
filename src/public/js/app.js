@@ -21,7 +21,8 @@ import * as status from './status.js'
 		if (!game.gameOver() && game.activeColor() === 'b') {
 			const aiMove = () => {
 				console.log('Thinking...')
-				const move = ai.move(game)
+				const depth = parseInt($('#difficulty').find(':selected').val())
+				const move = ai.move(game, depth)
 				makeMove(move.from, move.to, true)
 			}
 			window.setTimeout(aiMove, 1000)
@@ -91,7 +92,7 @@ import * as status from './status.js'
 
 	// Exporter
 	window['app'] = {
-		init: init
+		init: init,
 	}
 })()
 

@@ -1,11 +1,10 @@
 .row
-	.col-sm-8.px-2
+	.col-md-8.px-2
 		.row.justify-content-center: #board-container.col: #board
 
-		.row.d-sm-none.my-2
-			#status-2.col.text-center
+		.row.d-md-none.my-2: #status-2.col.text-center
 
-		.row.d-sm-none.mx-1.justify-content-center
+		.row.d-md-none.mx-1.justify-content-center
 			.col-1.px-0.mx-1.text-center v
 			.col-1.px-0.mx-1.text-center
 			.col-1.px-0.mx-1.text-center
@@ -19,7 +18,7 @@
 			.col-1.px-0.mx-1.text-center.d-none
 			.col-1.px-0.mx-1.text-center.d-none
 
-		.row.d-sm-none.mx-1.justify-content-center
+		.row.d-md-none.mx-1.justify-content-center
 			#turn-0.col-1.px-0.mx-1
 			#turn-1.col-1.px-0.mx-1
 			#turn-2.col-1.px-0.mx-1
@@ -33,7 +32,14 @@
 			#turn-10.col-1.px-0.mx-1.d-none
 			#turn-11.col-1.px-0.mx-1.d-none
 
-	.col-sm-r.d-none.d-sm-block.text-center.text-sm-left.px-2
+		.row.mx-2.my-2.justify-content-center
+			.col-auto.align-middle Difficulty
+			select#difficulty.col-4
+				option(value="3") Easy
+				option(selected value="4") Medium
+				option(value="5") Hard
+
+	.col-md-r.d-none.d-md-block.text-center.text-md-left.px-2
 		.row
 			.col-auto.font-weight-bold Status
 			#message.col.text-center

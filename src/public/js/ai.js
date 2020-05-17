@@ -1,180 +1,105 @@
 import { fairchess } from './fairchess.js'
 
-// Greedy
-function heuristic(node) {
-	const game = new fairchess(node.fen)
-
-	// More pieces === better
-	const board = game.board()
-	const activeColor = game.activeColor()
-	let num = 0
-	board.forEach((row) => {
-		row.forEach((col) => {
-			if (col) {
-				if (col.color === activeColor) { ++num }
-				else { --num }
-			}
-		})
-	})
-
-	// Taking high-ranking pieces === good
-	const captureMap = {
-		'p': 10,
-		'b': 20,
-		'n': 30,
-		'r': 50,
-		'q': 1000,
-		'k': Number.MAX_SAFE_INTEGER
-	}
-	let capturePoints = 0
-	const pieceCaptured = node.move.captured
-	if (pieceCaptured !== undefined) { capturePoints = captureMap[pieceCaptured] }
-
-	// Check/checkmate/stalemate is good
-	const gameOverMap = {}
-	gameOverMap[game.CHECK] = 1000
-	gameOverMap[game.DRAW] = 599999
-	gameOverMap[game.STALEMATE] = 599999
-	gameOverMap[game.CHECK_MATE] = Number.MAX_SAFE_INTEGER
-	gameOverMap[game.KING_TAKEN] = Number.MAX_SAFE_INTEGER
-	const gameOverType = game.gameOver()
-	let gameOverPoints = 0
-	if (gameOverType !== null) { gameOverPoints = gameOverMap[gameOverType] }
-
-	return num + capturePoints + gameOverPoints
+// Taking high-ranking pieces === good
+const captureMap = {
+	'p': 10,
+	'b': 20,
+	'n': 30,
+	'r': 50,
+	'q': 1000,
+	'k': 50000
 }
 
-function alphabeta(game) {
-	const MAXIMIZE = game.activeColor()
-	console.debug(`active maximization for ${MAXIMIZE}`)
-
-	// Determine if the game is being maximized for the active player of the
-	// origin
-	function maximize(fen) {
-		const game = new fairchess(fen)
-		return game.activeColor === MAXIMIZE
-	}
-
-	function makeChildren(fen) {
-		const game = new fairchess(fen)
-		const moves = game.moves({ verbose: true })
-
-		const children = []
-		moves.forEach((move) => {
-			const testGame = new fairchess(fen)
-			testGame.move(move)
-			const node = { fen: testGame.fen(), move: move }
-			if (testGame.gameOver()) {
-				node.terminal = true
-				children.push(node)
-			} else { children.push(node) }
-		})
-
-		return children
-	}
-
-	// TODO
-	// * Ignore boards where none of active player's pieces are under attack
-	const helper = (node, depth, alpha, beta, maximizingPlayer) => {
-		++numAnalyzed
-
-		if (depth === 0 || node.terminal) {
-			const score = heuristic(node)
-
-			// Debug messages
-			if (numAnalyzed % 10000 === 0) {
-				if (score > bestScore) {
-					bestScore = score
-				}
-				console.debug(`Considered ${numAnalyzed} moves`)
-				console.debug(`Best score ${bestScore}`)
-			}
-
-			return { val: score }
-		}
-
-		const children = makeChildren(node.fen)
-		let bestFEN = undefined
-		let val = maximizingPlayer ? -999999 : 999999
-		const tree = {}
-
-		if (maximizingPlayer) {
-			for (let i = 0; i < children.length; ++i) {
-				const child = children[i]
-				const result = helper(child, depth - 1, alpha, beta, maximize(child.fen))
-				const newVal = result.val
-				const key = `${child.move.from}-${child.move.to}`
-				tree[key] = result
-				if (newVal > val) {
-					bestFEN = child.fen
-					val = newVal
-				}
-				alpha = Math.max(alpha, val)
-				if (alpha >= beta) {
-					break
-				}
-			}
-		} else {
-			for (let i = 0; i < children.length; ++i) {
-				const child = children[i]
-				const result = helper(child, depth - 1, alpha, beta, maximize(child.fen))
-				const newVal = result.val
-				const key = `${child.move.from}-${child.move.to}`
-				tree[key] = result
-				if (newVal < val) {
-					bestFEN = child.fen
-					val = newVal
-				}
-				beta = Math.min(beta, val)
-				if (alpha >= beta) {
-					break
-				}
-			}
-		}
-
-		tree.best = { val: val, fen: bestFEN }
-		tree.val = val
-		return tree
-	}
-
-	const depth = 1
-	console.log('find best move from fen', game.fen())
-	const children = makeChildren(game.fen())
-	let numAnalyzed = 0
-	let bestScore = 0
-	let idx = 0
-	let val = -999999999
-	const tree = {}
-	for (let i = 0; i < children.length; ++i) {
-		const child = children[i]
-		const result = helper(child, depth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, true)
-		const key = `${child.move.from}-${child.move.to}`
-		tree[key] = result
-
-		const newVal = result.val
-		if (newVal > val) {
-			val = newVal
-			idx = i
+function evaluateBoard(board) {
+	// Having more more/certain pieces than opponent is better
+	let val = 0
+	for (let i = 0; i < 8; ++i) {
+		for (let j = 0; j < 8; ++j) {
+			val += getPieceValue(board[i][j])
 		}
 	}
-	const best = children[idx]
-	tree.best = { val: val, fen: best.fen }
-	console.debug(`High score: ${val}`)
-	console.debug('FEN', best.fen)
-	console.debug('tree', tree)
-	return best.move
+
+	return val
 }
 
-//function random(game) {
-//	const legalMoves = game.moves({ verbose: true })
-//	return legalMoves[Math.floor(Math.random() * legalMoves.length)]
-//}
+function getPieceValue(piece) {
+	if (!piece) { return 0 }
 
-const aiType = alphabeta
-//let aiType = random
+	// TODO rename captureMap
+	const val = captureMap[piece.type]
+	return piece.color === 'w' ? val : -val
+}
+
+function minimax(game, depth, alpha, beta, maxPlayer) {
+	++positionCount
+	if (depth === 0) { return -evaluateBoard(game.board()) }
+
+	const nextMoves = game.moves({ verbose: true })
+
+	if (maxPlayer) {
+		let bestVal = -999999
+		for (let i = 0; i < nextMoves.length; ++i) {
+			const move = nextMoves[i]
+			const tmpGame = fairchess(game.fen())
+			tmpGame.move(move)
+
+			const val = minimax(tmpGame, depth - 1, alpha, beta, move.color === 'w')
+			bestVal = Math.max(bestVal, val)
+			alpha = Math.max(alpha, bestVal)
+			if (beta <= alpha) { return bestVal }
+		}
+		return bestVal
+	} else {
+		let bestVal = 999999
+		for (let i = 0; i < nextMoves.length; ++i) {
+			const move = nextMoves[i]
+			const tmpGame = fairchess(game.fen())
+			tmpGame.move(move)
+
+			const val = minimax(tmpGame, depth - 1, alpha, beta, move.color === 'w')
+			bestVal = Math.min(bestVal, val)
+			beta = Math.min(beta, bestVal)
+			if (beta <= alpha) { return bestVal }
+		}
+		return bestVal
+	}
+}
+
+let positionCount = 0
+
+function minimaxRoot(game, depth) {
+	const nextMoves = game.moves({ verbose: true })
+	let bestMove = undefined
+	let bestVal = -999999
+
+	for (let i = 0; i < nextMoves.length; ++i) {
+		const move = nextMoves[i]
+		const tmpGame = fairchess(game.fen())
+		tmpGame.move(move)
+
+		const val = minimax(tmpGame, depth - 1, -100000, 100000,
+			tmpGame.turnColor === 'w')
+
+		if (val > bestVal) {
+			bestVal = val
+			bestMove = move
+		}
+	}
+
+	return bestMove
+}
 
 // PUBLIC MEMBERS ==============================================================
 
-export const move = (game) => {
-	return aiType(game)
+export const move = (game, depth) => {
+	positionCount = 0
+	const start = new Date().getTime()
+	const bestMove = minimaxRoot(game, depth, true)
+	const moveTime = (new Date().getTime() - start)
+	const posPerSec = ( positionCount * 1000 / moveTime)
+
+	console.log(`took ${moveTime / 1000} seconds`)
+	console.log('moves / sec', posPerSec)
+
+	return bestMove
 }
