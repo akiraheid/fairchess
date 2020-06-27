@@ -1,24 +1,39 @@
+pack ::= public.tgz
+unpackDir ::= "~/fairchess"
+pwd ::= $(shell pwd)
+user ::= $(shell id -u)
+group ::= $(shell id -g)
+
 build: Dockerfile lint
-	docker build -t fairchess .
+	docker build -t fairchess-build .
+	mkdir -p dist
+	docker run --rm -v ${pwd}/:/build/:ro -v ${pwd}/dist/:/build/dist/ -u ${user}:${group} -w /build/ fairchess-build node render.js
+	cp -r src/public/js/chessboardjs dist/js
+	cp -r src/public/img dist/img
+	cp -r src/public/css dist/css
 
 clean:
-	-rm -r dist node_modules
+	-rm -r dist node_modules ${pack}
 
-lint: node_modules
+deploy: clean build package upload
+
+lint: node_modules/eslint
 	npx eslint . && echo "No issues"
 
-node_modules:
-	npm i
+node_modules/eslint:
+	npm i eslint@6.8.0
+
+package: build
+	cd dist && tar -czf ../${pack} .
 
 serve: build
-	docker-compose up -d
-
-serve-down:
-	docker-compose down
-
-serve-log:
-	-docker-compose logs -f fairchess
+	cd dist && python3 -m http.server
 
 test: lint
 
-.PHONY: build build-dist clean lint serve serve-down serve-log
+upload: package
+	-ssh fairchess "cd ${unpackDir} && rm -r *"
+	scp ${pack} fairchess:${unpackDir}
+	ssh fairchess "cd ${unpackDir} && tar -xzf ${pack} && rm ${pack}"
+
+.PHONY: build clean deploy lint package serve test upload

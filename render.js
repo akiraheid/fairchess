@@ -1,9 +1,34 @@
 const fs = require('fs')
 const path = require('path')
 const pug = require('pug')
+const webpack = require('webpack')
 
-const distDir = path.join(__dirname, '..', 'dist')
-const pugDir = path.join(__dirname, 'views')
+// "compile" JS files
+webpack({
+	mode: 'production',
+	entry: './src/public/js/app.js',
+	output: {
+		filename: 'app.js',
+		path: path.resolve(__dirname, 'dist', 'js'),
+	},
+	module: {
+		rules: [
+			{
+				test: /\.svg$/,
+				use: ['file-loader'],
+			},
+		],
+	},
+}, (err, stats) => {
+	if (err || stats.hasErrors()) {
+		console.error(err)
+		console.error(stats)
+	}
+	// Done processing
+})
+
+const distDir = path.join(__dirname, 'dist')
+const pugDir = path.join(__dirname, 'src', 'views')
 const files = ['play.pug']
 
 const render = (outPath, filePath) => {
