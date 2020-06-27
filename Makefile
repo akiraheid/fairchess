@@ -8,6 +8,7 @@ build: Dockerfile lint
 	docker build -t fairchess-build .
 	mkdir -p dist
 	docker run --rm -v ${pwd}/:/build/:ro -v ${pwd}/dist/:/build/dist/ -u ${user}:${group} -w /build/ fairchess-build node render.js
+	-rm -rf tmp
 	cp -r src/public/js/chessboardjs dist/js
 	cp -r src/public/img dist/img
 	cp -r src/public/css dist/css
