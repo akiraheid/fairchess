@@ -32,7 +32,7 @@ function getPieceValue(piece) {
 
 function minimax(game, depth, alpha, beta, maxPlayer) {
 	++positionCount
-	if (depth === 0) { return -evaluateBoard(game.board()) }
+	if (depth === 0 || game.gameOver()) { return -evaluateBoard(game.board()) }
 
 	const nextMoves = game.moves({ verbose: true })
 
