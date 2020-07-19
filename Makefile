@@ -18,11 +18,8 @@ clean:
 
 deploy: clean build package upload
 
-lint: node_modules/eslint
-	npx eslint . && echo "No issues"
-
-node_modules/eslint:
-	npm i eslint@6.8.0
+lint:
+	docker run --rm -v ${pwd}:/data:ro cytopia/eslint .
 
 package: build
 	cd dist && tar -czf ../${pack} .
