@@ -3,12 +3,22 @@ unpackDir ::= "~/fairchess"
 pwd ::= $(shell pwd)
 user ::= $(shell id -u)
 group ::= $(shell id -g)
+buildContainer = fairchess-build
 
 build: Dockerfile lint
-	docker build -t fairchess-build .
+	docker build -t ${buildContainer} .
+	-rm -r dist
 	mkdir -p dist
-	docker run --rm -v ${pwd}/:/build/:ro -v ${pwd}/dist/:/build/dist/ -u ${user}:${group} -w /build/ fairchess-build node render.js
-	-rm -rf tmp
+	docker run \
+		--name ${buildContainer} \
+		-v ${pwd}/render.js:/build/render.js:ro \
+		-v ${pwd}/src/:/build/src/:ro \
+		-v ${pwd}/dist/:/build/dist/ \
+		${buildContainer} node render.js
+
+	docker cp ${buildContainer}:/build/dist/ .
+	docker stop ${buildContainer}
+	docker rm ${buildContainer}
 	cp -r src/public/js/chessboardjs dist/js
 	cp -r src/public/img dist/img
 	cp -r src/public/css dist/css
