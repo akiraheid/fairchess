@@ -4,6 +4,7 @@ pwd ::= $(shell pwd)
 user ::= $(shell id -u)
 group ::= $(shell id -g)
 buildContainer = fairchess-build
+updateContainer = fairchess-lock-update
 
 build: Dockerfile lint
 	docker build -t ${buildContainer} .
@@ -15,7 +16,6 @@ build: Dockerfile lint
 		-v ${pwd}/src/:/build/src/:ro \
 		-v ${pwd}/dist/:/build/dist/ \
 		${buildContainer} node render.js
-
 	docker cp ${buildContainer}:/build/dist/ .
 	docker stop ${buildContainer}
 	docker rm ${buildContainer}
@@ -39,9 +39,21 @@ serve: build
 
 test: lint
 
+update: package.json
+	-docker stop ${updateContainer}
+	-docker rm ${updateContainer}
+	docker run \
+		--name ${updateContainer} \
+		-v ${pwd}/package.json:/package.json:ro \
+		-w / \
+		node:10-alpine npm install --package-lock
+	docker cp ${updateContainer}:/package-lock.json .
+	docker stop ${updateContainer}
+	docker rm ${updateContainer}
+
 upload: package
 	-ssh fairchess "cd ${unpackDir} && rm -r *"
 	scp ${pack} fairchess:${unpackDir}
 	ssh fairchess "cd ${unpackDir} && tar -xzf ${pack} && rm ${pack}"
 
-.PHONY: build clean deploy lint package serve test upload
+.PHONY: build clean deploy lint package serve test update upload
