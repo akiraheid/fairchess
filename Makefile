@@ -6,8 +6,10 @@ group ::= $(shell id -g)
 buildContainer = fairchess-build
 updateContainer = fairchess-lock-update
 
-build: Dockerfile lint
-	docker build -t ${buildContainer} .
+audit: build-container
+	docker run --rm ${buildContainer} npm audit
+
+build: Dockerfile lint build-container
 	-rm -r dist
 	mkdir -p dist
 	docker run \
@@ -22,6 +24,9 @@ build: Dockerfile lint
 	cp -r src/public/js/chessboardjs dist/js
 	cp -r src/public/img dist/img
 	cp -r src/public/css dist/css
+
+build-container: Dockerfile
+	docker build -t ${buildContainer} .
 
 clean:
 	-rm -r dist node_modules ${pack}
