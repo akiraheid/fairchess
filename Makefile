@@ -16,7 +16,7 @@ build: Dockerfile lint
 		-v ${pwd}/src/:/build/src/:ro \
 		-v ${pwd}/dist/:/build/dist/ \
 		${buildContainer} node render.js
-	docker cp ${buildContainer}:/build/dist/ .
+	docker cp ${buildContainer}:/build/dist/ dist/
 	docker stop ${buildContainer}
 	docker rm ${buildContainer}
 	cp -r src/public/js/chessboardjs dist/js
