@@ -7,26 +7,26 @@ buildContainer = fairchess-build
 updateContainer = fairchess-lock-update
 
 audit: build-container
-	docker run --rm ${buildContainer} npm audit
+	podman run --rm ${buildContainer} npm audit
 
 build: Dockerfile lint build-container
 	-rm -r dist
 	mkdir -p dist
-	docker run \
+	podman run \
 		--name ${buildContainer} \
 		-v ${pwd}/render.js:/build/render.js:ro \
 		-v ${pwd}/src/:/build/src/:ro \
 		-v ${pwd}/dist/:/build/dist/ \
 		${buildContainer} node render.js
-	docker cp ${buildContainer}:/build/dist/ dist/
-	docker stop ${buildContainer}
-	docker rm ${buildContainer}
+	podman cp ${buildContainer}:/build/dist/ dist/
+	podman stop ${buildContainer}
+	podman rm ${buildContainer}
 	cp -r src/public/js/chessboardjs dist/js
 	cp -r src/public/img dist/img
 	cp -r src/public/css dist/css
 
 build-container: Dockerfile
-	docker build -t ${buildContainer} .
+	podman build -t ${buildContainer} .
 
 clean:
 	-rm -r dist node_modules ${pack}
@@ -34,7 +34,7 @@ clean:
 deploy: clean build package upload
 
 lint:
-	docker run --rm -v ${pwd}:/data:ro cytopia/eslint .
+	podman run --rm -v ${pwd}:/data:ro docker.io/cytopia/eslint .
 
 package: build
 	cd dist && tar -czf ../${pack} .
@@ -45,16 +45,16 @@ serve: build
 test: lint
 
 update: package.json
-	-docker stop ${updateContainer}
-	-docker rm ${updateContainer}
-	docker run \
+	-podman stop ${updateContainer}
+	-podman rm ${updateContainer}
+	podman run \
 		--name ${updateContainer} \
 		-v ${pwd}/package.json:/package.json:ro \
 		-w / \
-		node:10-alpine npm install --package-lock
-	docker cp ${updateContainer}:/package-lock.json .
-	docker stop ${updateContainer}
-	docker rm ${updateContainer}
+		docker.io/node:16-alpine npm install --package-lock
+	podman cp ${updateContainer}:/package-lock.json .
+	podman stop ${updateContainer}
+	podman rm ${updateContainer}
 
 upload: package
 	-ssh fairchess "cd ${unpackDir} && rm -r *"

@@ -1,5 +1,5 @@
 # Rendering image
-FROM node:10-alpine AS builder
+FROM docker.io/node:16-alpine AS builder
 
 ENV NODE_ENV=development
 
