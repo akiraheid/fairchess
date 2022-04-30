@@ -33,6 +33,18 @@ clean:
 
 deploy: clean build package upload
 
+gh-pages: clean build
+	-git branch -D gh-pages
+	git checkout -b gh-pages
+	git rm --cached COPYING
+	git reset --hard `git rev-list --max-parents=0 HEAD`
+	find . -maxdepth 1 ! -name 'dist' ! -name '.git' ! -name 'COPYING' -exec rm -r {} \;
+	git add dist COPYING
+	git mv dist/* .
+	rm -r dist
+	git commit -am "website"
+	git push -f --set-upstream origin gh-pages
+
 lint:
 	podman run --rm -v ${pwd}:/data:ro docker.io/cytopia/eslint .
 

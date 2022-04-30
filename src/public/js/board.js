@@ -55,7 +55,7 @@ const boardConfig = {
 	onDragStart: onDragStart,
 	onDrop: onDrop,
 	position: 'start',
-	pieceTheme: '/img/{piece}.svg'
+	pieceTheme: '../img/{piece}.svg'
 }
 
 const board = new ChessBoard('board', boardConfig)
